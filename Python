@@ -1,54 +1,47 @@
-import os
-import random
+# -*- coding: utf-8 -*-
+import time
+from calendar import isleap
 
-from flask import Flask, request
-
-app = Flask(__name__)
-
-secret_number = random.randint(1, 100)
-attempts = 0
-max_attempts = 10
-
-@app.route("/", methods=["GET", "POST"])
-def index():
-    global attempts
-
-    # Add the input line here
-    user_input = input("Enter something: ") + "\n"
-
-    if request.method == "POST":
-        guess = int(request.form["guess"])
-        attempts += 1
-
-        if guess < secret_number:
-            message = "Too low! Try again."
-        elif guess > secret_number:
-            message = "Too high! Try again."
-        else:
-            message = f"Congratulations! You guessed the number {secret_number} in {attempts} attempts."
+# judge the leap year
+def judge_leap_year(year):
+    if isleap(year):
+        return True
     else:
-        message = "Welcome to the Guess the Number game! I've chosen a number between 1 and 100. Try to guess it."
+        return False
 
-    if attempts >= max_attempts or (attempts > 0 and guess == secret_number):
-        message += f" The secret number was {secret_number}."
-        # Reset the game
-        secret_number = random.randint(1, 100)
-        attempts = 0
+# returns the number of days in each month
+def month_days(month, leap_year):
+    if month in [1, 3, 5, 7, 8, 10, 12]:
+        return 31
+    elif month in [4, 6, 9, 11]:
+        return 30
+    elif month == 2 and leap_year:
+        return 29
+    elif month == 2 and (not leap_year):
+        return 28
 
-    return f"""
-    <html>
-    <head><title>Guess the Number</title></head>
-    <body>
-        <h1>{message}</h1>
-        <form method="post">
-            <label for="guess">Enter your guess: </label>
-            <input type="number" id="guess" name="guess" min="1" max="100">
-            <input type="submit" value="Submit">
-        </form>
-    </body>
-    </html>
-    """
+name = input("input your name: ") + "\n"  # Add newline character here
+age = input("input your age: ") + "\n"    # Add newline character here
+localtime = time.localtime(time.time())
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+year = int(age)
+month = year * 12 + localtime.tm_mon
+day = 0
+
+begin_year = int(localtime.tm_year) - year
+end_year = begin_year + year
+
+# calculate the days
+for y in range(begin_year, end_year):
+    if (judge_leap_year(y)):
+        day = day + 366
+    else:
+        day = day + 365
+
+leap_year = judge_leap_year(localtime.tm_year)
+for m in range(1, localtime.tm_mon):
+    day = day + month_days(m, leap_year)
+
+day = day + localtime.tm_mday
+print("%s's age is %d years or " % (name, year), end="")
+print("%d months or %d days" % (month, day))
